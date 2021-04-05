@@ -3,8 +3,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-//#define DEBUG 1
-
 typedef struct line_t
 {
     char *content;
@@ -19,29 +17,32 @@ line_t *append_list(line_t *head, char *content);
 line_t *create_line(char *content);
 void print_list(line_t *head);
 void free_list(line_t *head);
-int is_same_file(const char *fn1, const char *fn2);
+int is_same_file(const char *filename1, const char *filename2);
+line_t *read_lines_from_stream(void *stream);
 
 int main(int argc, const char **argv)
 {
     line_t *input = NULL;
     line_t *reversed = NULL;
 
-#ifndef DEBUG
-
     switch (argc)
     {
-    case 1:
+    case 1: /* $ ./reverse */
     {
-        break;
-    }
-    case 2:
-    {
-        input = read_lines_from_file(argv[1]);
-        line_t *reversed = reverse_input(input);
+        // read from stdin
+        input = read_lines_from_stream(stdin);
+        reversed = reverse_input(input);
         print_list(reversed);
         break;
     }
-    case 3:
+    case 2: /* $ ./reverse input.txt */
+    {
+        input = read_lines_from_file(argv[1]);
+        reversed = reverse_input(input);
+        print_list(reversed);
+        break;
+    }
+    case 3: /* $ ./reverse input.txt output.txt */
     {
         if (is_same_file(argv[1], argv[2]) == 1)
         {
@@ -50,7 +51,7 @@ int main(int argc, const char **argv)
         }
 
         input = read_lines_from_file(argv[1]);
-        line_t *reversed = reverse_input(input);
+        reversed = reverse_input(input);
         write_lines_to_file(argv[2], reversed);
         break;
     }
@@ -59,14 +60,6 @@ int main(int argc, const char **argv)
         exit(1);
         break;
     }
-#else
-    input = read_lines_from_file("./custom_tests/test.txt");
-    write_lines_to_file("./custom_tests/test_out4.txt", input);
-    reversed = reverse_input(input);
-
-    //print_list(input);
-    print_list(reversed);
-#endif
 
     free_list(input);
     free_list(reversed);
@@ -84,7 +77,7 @@ int is_same_file(const char *filename1, const char *filename2)
     // return early if file(s) don't exist
     if (file1 == NULL || file2 == NULL)
     {
-        return 0;
+        return -1;
     }
 
     int fd1 = fileno(file2);
@@ -113,7 +106,8 @@ line_t *reverse_input(line_t *list)
         list = list->next;
     }
 
-    // iterate over the list in reverse order
+    // iterate over the list in reverse order and
+    // add the lines to the result
     while (list != NULL)
     {
         char *content = NULL;
@@ -125,28 +119,25 @@ line_t *reverse_input(line_t *list)
         }
 
         memcpy(content, list->content, len);
-        result = create_line(result, content);
+        result = append_list(result, content);
         list = list->prev;
     }
 
     return result;
 }
 
-line_t *read_lines_from_file(const char *filename)
+// stream is e.g. file or stdin
+line_t *read_lines_from_stream(void *stream)
 {
-    FILE *fp = fopen(filename, "r");
-    if (fp == NULL)
-    {
-        fprintf(stderr, "error: cannot open file '%s'\n", filename);
-        exit(1);
-    }
+    if (stream == NULL)
+        return NULL;
 
     line_t *list = NULL;
     char *line = NULL;
     size_t line_size = 0;
     ssize_t num_chars = 0;
 
-    while ((num_chars = getline(&line, &line_size, fp)) != -1)
+    while ((num_chars = getline(&line, &line_size, stream)) != -1)
     {
         // remove new line if it exists - will be added back later
         // since the last line might not have a new line character
@@ -167,8 +158,20 @@ line_t *read_lines_from_file(const char *filename)
     }
 
     free(line);
-    fclose(fp);
+    return list;
+}
 
+line_t *read_lines_from_file(const char *filename)
+{
+    FILE *fp = fopen(filename, "r");
+    if (fp == NULL)
+    {
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        exit(1);
+    }
+
+    line_t *list = read_lines_from_stream(fp);
+    fclose(fp);
     return list;
 }
 
@@ -193,28 +196,28 @@ void write_lines_to_file(const char *filename, line_t *head)
 line_t *create_line(char *content)
 {
     // create instance
-    line_t *newObj;
-    if ((newObj = (line_t *)malloc(sizeof(line_t))) == NULL)
+    line_t *new_obj;
+    if ((new_obj = (line_t *)malloc(sizeof(line_t))) == NULL)
     {
         fprintf(stderr, "malloc failed\n");
         exit(1);
     }
 
-    newObj->content = content;
-    newObj->next = NULL;
-    newObj->prev = NULL;
+    new_obj->content = content;
+    new_obj->next = NULL;
+    new_obj->prev = NULL;
 
-    return newObj;
+    return new_obj;
 }
 
 line_t *append_list(line_t *head, char *content)
 {
-    line_t *newObj = create_line(content);
+    line_t *new_obj = create_line(content);
 
     // place it to the right spot in the list
     if (head == NULL)
     {
-        head = newObj;
+        head = new_obj;
     }
     else
     {
@@ -224,8 +227,8 @@ line_t *append_list(line_t *head, char *content)
             line = line->next;
         }
 
-        line->next = newObj;
-        newObj->prev = line;
+        line->next = new_obj;
+        new_obj->prev = line;
     }
 
     return head;

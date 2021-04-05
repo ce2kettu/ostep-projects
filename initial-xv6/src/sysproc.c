@@ -45,7 +45,19 @@ sys_getpid(void)
 int
 sys_getreadcount(void)
 {
-    return readcount;
+  // parse first argument as an integer
+  int reset;
+  if (argint(0, &reset) < 0)
+    return -1;
+
+  // reset counter
+  if (reset == 1) {
+    acquire(&readcount_lock);
+    readcount = 0;
+    release(&readcount_lock);
+  }
+
+  return readcount;
 }
 
 int

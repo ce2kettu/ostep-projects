@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #define BUFFER_SIZE 100
 //#define DEBUG 1
@@ -18,6 +19,7 @@ line_t *reverse_input(line_t *input);
 line_t *create_line(line_t *head, char *content);
 void print_list(line_t *head);
 void free_list(line_t *head);
+int is_same_file(const char *fn1, const char *fn2);
 
 int main(int argc, const char **argv)
 {
@@ -40,7 +42,7 @@ int main(int argc, const char **argv)
     }
     case 3:
     {
-        if (strcmp(argv[1], argv[2]) == 0)
+        if (is_same_file(argv[1], argv[2]) == 1)
         {
             fprintf(stderr, "reverse: input and output file must differ\n");
             exit(1);
@@ -57,19 +59,43 @@ int main(int argc, const char **argv)
         break;
     }
 #else
-    // line_t *input = NULL;
-    // input = read_file("./custom_tests/test.txt");
-    // write_file("./custom_tests/test_out3.txt", input);
-    // line_t *reversed = reverse_input(input);
+    line_t *input = NULL;
+    input = read_file("./custom_tests/test.txt");
+    write_file("./custom_tests/test_out4.txt", input);
+    line_t *reversed = reverse_input(input);
 
-    // //print_list(input);
-    // print_list(reversed);
+    //print_list(input);
+    print_list(reversed);
 
-    // free_list(input);
-    // free_list(reversed);
+    free_list(input);
+    free_list(reversed);
 #endif
 
     return 0;
+}
+
+// File comparison source: https://stackoverflow.com/a/12502754
+int is_same_file(const char *fn1, const char *fn2)
+{
+    FILE *f1 = fopen(fn1, "r");
+    FILE *f2 = fopen(fn2, "r");
+
+    if (f1 == NULL || f2 == NULL)
+    {
+        return 0;
+    }
+
+    int fd1 = fileno(f1);
+    int fd2 = fileno(f2);
+    struct stat stat1, stat2;
+
+    if (fstat(fd1, &stat1) < 0)
+        return -1;
+
+    if (fstat(fd2, &stat2) < 0)
+        return -1;
+
+    return (stat1.st_dev == stat2.st_dev) && (stat1.st_ino == stat2.st_ino);
 }
 
 line_t *reverse_input(line_t *list)

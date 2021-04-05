@@ -5,6 +5,5 @@ if ! [[ -x reverse ]]; then
     exit 1
 fi
 
-../tester/run-tests.sh $*
-
-
+rm -rf tests-out
+../tester/run-tests.sh $* -v -d modified-tests

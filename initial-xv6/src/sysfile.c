@@ -66,7 +66,9 @@ sys_dup(void)
   return fd;
 }
 
+// readcount definitions
 int readcount = 0;
+struct spinlock readcount_lock;
 
 int
 sys_read(void)
@@ -75,7 +77,10 @@ sys_read(void)
   int n;
   char *p;
 
+  // acquire lock before incrementing readcount
+  acquire(&readcount_lock);
   readcount++;
+  release(&readcount_lock);
 
   if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
     return -1;

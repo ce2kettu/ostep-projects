@@ -3,7 +3,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define BUFFER_SIZE 100
 //#define DEBUG 1
 
 typedef struct line_t
@@ -13,19 +12,21 @@ typedef struct line_t
     struct line_t *prev;
 } line_t;
 
-line_t *read_file(const char *filename);
-void write_file(const char *filename, line_t *content);
+line_t *read_lines_from_file(const char *filename);
+void write_lines_to_file(const char *filename, line_t *content);
 line_t *reverse_input(line_t *input);
-line_t *create_line(line_t *head, char *content);
+line_t *append_list(line_t *head, char *content);
+line_t *create_line(char *content);
 void print_list(line_t *head);
 void free_list(line_t *head);
 int is_same_file(const char *fn1, const char *fn2);
 
 int main(int argc, const char **argv)
 {
-#ifndef DEBUG
     line_t *input = NULL;
     line_t *reversed = NULL;
+
+#ifndef DEBUG
 
     switch (argc)
     {
@@ -35,7 +36,7 @@ int main(int argc, const char **argv)
     }
     case 2:
     {
-        input = read_file(argv[1]);
+        input = read_lines_from_file(argv[1]);
         line_t *reversed = reverse_input(input);
         print_list(reversed);
         break;
@@ -44,13 +45,13 @@ int main(int argc, const char **argv)
     {
         if (is_same_file(argv[1], argv[2]) == 1)
         {
-            fprintf(stderr, "reverse: input and output file must differ\n");
+            fprintf(stderr, "Input and output file must differ\n");
             exit(1);
         }
 
-        input = read_file(argv[1]);
+        input = read_lines_from_file(argv[1]);
         line_t *reversed = reverse_input(input);
-        write_file(argv[2], reversed);
+        write_lines_to_file(argv[2], reversed);
         break;
     }
     default:
@@ -59,34 +60,35 @@ int main(int argc, const char **argv)
         break;
     }
 #else
-    line_t *input = NULL;
-    input = read_file("./custom_tests/test.txt");
-    write_file("./custom_tests/test_out4.txt", input);
-    line_t *reversed = reverse_input(input);
+    input = read_lines_from_file("./custom_tests/test.txt");
+    write_lines_to_file("./custom_tests/test_out4.txt", input);
+    reversed = reverse_input(input);
 
     //print_list(input);
     print_list(reversed);
+#endif
 
     free_list(input);
     free_list(reversed);
-#endif
 
     return 0;
 }
 
-// File comparison source: https://stackoverflow.com/a/12502754
-int is_same_file(const char *fn1, const char *fn2)
+// Same file comparison
+// Source and inspiration: https://stackoverflow.com/a/12502754
+int is_same_file(const char *filename1, const char *filename2)
 {
-    FILE *f1 = fopen(fn1, "r");
-    FILE *f2 = fopen(fn2, "r");
+    FILE *file1 = fopen(filename1, "r");
+    FILE *file2 = fopen(filename2, "r");
 
-    if (f1 == NULL || f2 == NULL)
+    // return early if file(s) don't exist
+    if (file1 == NULL || file2 == NULL)
     {
         return 0;
     }
 
-    int fd1 = fileno(f1);
-    int fd2 = fileno(f2);
+    int fd1 = fileno(file2);
+    int fd2 = fileno(file2);
     struct stat stat1, stat2;
 
     if (fstat(fd1, &stat1) < 0)
@@ -130,14 +132,12 @@ line_t *reverse_input(line_t *list)
     return result;
 }
 
-// returns a buffer containing file contents - must be freed after use
-line_t *read_file(const char *filename)
+line_t *read_lines_from_file(const char *filename)
 {
     FILE *fp = fopen(filename, "r");
-
     if (fp == NULL)
     {
-        fprintf(stderr, "reverse: cannot open file '%s'\n", filename);
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
         exit(1);
     }
 
@@ -160,10 +160,10 @@ line_t *read_file(const char *filename)
             exit(1);
         }
 
-        // append line to buffer
+        // append line to buffer with a new line character
         sprintf(buffer, "%s\n", line);
 
-        list = create_line(list, buffer);
+        list = append_list(list, buffer);
     }
 
     free(line);
@@ -172,13 +172,12 @@ line_t *read_file(const char *filename)
     return list;
 }
 
-void write_file(const char *filename, line_t *head)
+void write_lines_to_file(const char *filename, line_t *head)
 {
     FILE *fp = fopen(filename, "w");
-
     if (fp == NULL)
     {
-        fprintf(stderr, "reverse: cannot open file '%s'\n", filename);
+        fprintf(stderr, "error: cannot open file '%s'\n", filename);
         exit(1);
     }
 
@@ -191,8 +190,9 @@ void write_file(const char *filename, line_t *head)
     fclose(fp);
 }
 
-line_t *create_line(line_t *head, char *content)
+line_t *create_line(char *content)
 {
+    // create instance
     line_t *newObj;
     if ((newObj = (line_t *)malloc(sizeof(line_t))) == NULL)
     {
@@ -204,6 +204,14 @@ line_t *create_line(line_t *head, char *content)
     newObj->next = NULL;
     newObj->prev = NULL;
 
+    return newObj;
+}
+
+line_t *append_list(line_t *head, char *content)
+{
+    line_t *newObj = create_line(content);
+
+    // place it to the right spot in the list
     if (head == NULL)
     {
         head = newObj;

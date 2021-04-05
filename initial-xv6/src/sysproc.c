@@ -43,6 +43,12 @@ sys_getpid(void)
 }
 
 int
+sys_getreadcount(void)
+{
+    return readcount;
+}
+
+int
 sys_sbrk(void)
 {
   int addr;

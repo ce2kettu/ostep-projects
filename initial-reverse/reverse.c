@@ -3,7 +3,7 @@
 #include <string.h>
 
 #define BUFFER_SIZE 100
-#define DEBUG 1
+//#define DEBUG 1
 
 typedef struct line_t
 {
@@ -22,30 +22,51 @@ void free_list(line_t *head);
 int main(int argc, const char **argv)
 {
 #ifndef DEBUG
+    line_t *input = NULL;
+    line_t *reversed = NULL;
+
     switch (argc)
     {
-    case 0:
-        break;
     case 1:
+    {
         break;
+    }
     case 2:
+    {
+        input = read_file(argv[1]);
+        line_t *reversed = reverse_input(input);
+        print_list(reversed);
         break;
+    }
+    case 3:
+    {
+        if (strcmp(argv[1], argv[2]) == 0)
+        {
+            fprintf(stderr, "reverse: input and output file must differ\n");
+            exit(1);
+        }
+
+        input = read_file(argv[1]);
+        line_t *reversed = reverse_input(input);
+        write_file(argv[2], reversed);
+        break;
+    }
     default:
         fprintf(stderr, "usage: reverse <input> <output>\n");
         exit(1);
         break;
     }
 #else
-    line_t *input = NULL;
-    input = read_file("./custom_tests/test.txt");
-    write_file("./custom_tests/test_out3.txt", input);
-    line_t *reversed = reverse_input(input);
+    // line_t *input = NULL;
+    // input = read_file("./custom_tests/test.txt");
+    // write_file("./custom_tests/test_out3.txt", input);
+    // line_t *reversed = reverse_input(input);
 
-    //print_list(input);
-    print_list(reversed);
+    // //print_list(input);
+    // print_list(reversed);
 
-    free_list(input);
-    free_list(reversed);
+    // free_list(input);
+    // free_list(reversed);
 #endif
 
     return 0;
@@ -90,7 +111,7 @@ line_t *read_file(const char *filename)
 
     if (fp == NULL)
     {
-        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        fprintf(stderr, "reverse: cannot open file '%s'\n", filename);
         exit(1);
     }
 
@@ -131,7 +152,7 @@ void write_file(const char *filename, line_t *head)
 
     if (fp == NULL)
     {
-        fprintf(stderr, "error: cannot open file '%s'\n", filename);
+        fprintf(stderr, "reverse: cannot open file '%s'\n", filename);
         exit(1);
     }
 

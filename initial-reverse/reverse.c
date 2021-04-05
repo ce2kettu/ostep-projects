@@ -5,9 +5,19 @@
 #define BUFFER_SIZE 100
 #define DEBUG 1
 
-char *read_file(const char *filename);
-void write_file(const char *filename, char* content);
-void reverse_input(const char *input);
+typedef struct line_t
+{
+    char *content;
+    struct line_t *next;
+    struct line_t *prev;
+} line_t;
+
+line_t *read_file(const char *filename);
+void write_file(const char *filename, line_t *content);
+line_t *reverse_input(line_t *input);
+line_t *create_line(line_t *head, char *content);
+void print_list(line_t *head);
+void free_list(line_t *head);
 
 int main(int argc, const char **argv)
 {
@@ -26,21 +36,55 @@ int main(int argc, const char **argv)
         break;
     }
 #else
+    line_t *input = NULL;
+    input = read_file("./custom_tests/test.txt");
+    write_file("./custom_tests/test_out3.txt", input);
+    line_t *reversed = reverse_input(input);
 
-    char* buf = read_file("./custom_tests/test.txt");
-    write_file("./custom_tests/test_out2.txt", buf);
-    free(buf);
+    //print_list(input);
+    print_list(reversed);
+
+    free_list(input);
+    free_list(reversed);
 #endif
 
     return 0;
 }
 
-void reverse_input(const char *input)
+line_t *reverse_input(line_t *list)
 {
+    if (list == NULL)
+        return NULL;
+
+    line_t *result = NULL;
+
+    // find the last child of the list
+    while (list->next != NULL)
+    {
+        list = list->next;
+    }
+
+    // iterate over the list in reverse order
+    while (list != NULL)
+    {
+        char *content = NULL;
+        size_t len = strlen(list->content) + 1;
+        if ((content = (char *)malloc(len * sizeof(*content))) == NULL)
+        {
+            fprintf(stderr, "malloc failed\n");
+            exit(1);
+        }
+
+        memcpy(content, list->content, len);
+        result = create_line(result, content);
+        list = list->prev;
+    }
+
+    return result;
 }
 
 // returns a buffer containing file contents - must be freed after use
-char *read_file(const char *filename)
+line_t *read_file(const char *filename)
 {
     FILE *fp = fopen(filename, "r");
 
@@ -50,32 +94,38 @@ char *read_file(const char *filename)
         exit(1);
     }
 
-    char *buffer = NULL;
+    line_t *list = NULL;
     char *line = NULL;
     size_t line_size = 0;
     ssize_t num_chars = 0;
 
     while ((num_chars = getline(&line, &line_size, fp)) != -1)
     {
-        // realloc memory to fit the new line
-        size_t len = (buffer == NULL) ? 0 : strlen(buffer);
-        if ((buffer = (char *)realloc(buffer, (len + num_chars) * sizeof(*buffer))) == NULL)
+        // remove new line if it exists - will be added back later
+        // since the last line might not have a new line character
+        if (line[num_chars - 1] == '\n')
+            line[num_chars - 1] = '\0';
+
+        char *buffer = NULL;
+        if ((buffer = (char *)malloc((strlen(line) + 1) * sizeof(*buffer))) == NULL)
         {
-            fprintf(stderr, "realloc failed\n");
+            fprintf(stderr, "malloc failed\n");
             exit(1);
         }
 
         // append line to buffer
-        sprintf(buffer + strlen(buffer), "%s", line);
+        sprintf(buffer, "%s\n", line);
+
+        list = create_line(list, buffer);
     }
 
     free(line);
     fclose(fp);
 
-    return buffer;
+    return list;
 }
 
-void write_file(const char *filename, char* content)
+void write_file(const char *filename, line_t *head)
 {
     FILE *fp = fopen(filename, "w");
 
@@ -85,6 +135,62 @@ void write_file(const char *filename, char* content)
         exit(1);
     }
 
-    fprintf(fp, "%s", content);
+    while (head != NULL)
+    {
+        fprintf(fp, "%s", head->content);
+        head = head->next;
+    }
+
     fclose(fp);
+}
+
+line_t *create_line(line_t *head, char *content)
+{
+    line_t *newObj;
+    if ((newObj = (line_t *)malloc(sizeof(line_t))) == NULL)
+    {
+        fprintf(stderr, "malloc failed\n");
+        exit(1);
+    }
+
+    newObj->content = content;
+    newObj->next = NULL;
+    newObj->prev = NULL;
+
+    if (head == NULL)
+    {
+        head = newObj;
+    }
+    else
+    {
+        line_t *line = head;
+        while (line->next != NULL)
+        {
+            line = line->next;
+        }
+
+        line->next = newObj;
+        newObj->prev = line;
+    }
+
+    return head;
+}
+
+void free_list(line_t *head)
+{
+    if (head != NULL)
+    {
+        free_list(head->next);
+        free(head->content);
+        free(head);
+    }
+}
+
+void print_list(line_t *head)
+{
+    if (head != NULL)
+    {
+        fprintf(stdout, "%s", head->content);
+        print_list(head->next);
+    }
 }

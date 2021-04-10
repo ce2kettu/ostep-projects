@@ -55,7 +55,7 @@ sys_getusagecount(void)
   // reset the counter
   if (is_reset_flag == 1) {
     acquire(&usage_count_lock);
-    myproc()->usage_count = 0;
+    usage_counter_count = 0;
     release(&usage_count_lock);
   }
 
@@ -70,7 +70,7 @@ sys_getusagecount(void)
       if (!is_reset_flag)
       {
         acquire(&usage_count_lock);
-        myproc()->usage_count = 0;
+        usage_counter_count = 0;
         release(&usage_count_lock);
       }
       sys_call_usage_to_track = sys_call_to_follow;
@@ -81,7 +81,7 @@ sys_getusagecount(void)
     return -1;
   }
 
-  return myproc()->usage_count;
+  return usage_counter_count;
 }
 
 int

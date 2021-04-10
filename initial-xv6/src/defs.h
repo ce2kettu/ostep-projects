@@ -194,3 +194,4 @@ void            clearpteu(pde_t *pgdir, char *uva);
 extern int sys_call_usage_to_track;
 extern struct spinlock usage_count_lock;
 extern int sys_call_count;
+extern int usage_counter_count;

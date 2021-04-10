@@ -133,6 +133,7 @@ static int (*syscalls[])(void) = {
 
 // usage count definitions
 int sys_call_usage_to_track = 0; // default value, never counted
+int usage_counter_count = 0;
 int sys_call_count = NELEM(syscalls);
 struct spinlock usage_count_lock;
 
@@ -150,7 +151,7 @@ syscall(void)
     if (num == sys_call_usage_to_track)
     {
       acquire(&usage_count_lock);
-      curproc->usage_count++;
+      usage_counter_count++;
       release(&usage_count_lock);
     }
   } else {

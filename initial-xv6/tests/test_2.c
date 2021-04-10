@@ -1,10 +1,11 @@
 #include "types.h"
 #include "stat.h"
 #include "user.h"
+#include "syscall.h"
 
 int
 main(int argc, char *argv[]) {
-    int x1 = getreadcount();
+    int x1 = getusagecount(0, SYS_read);
 
     int rc = fork();
 
@@ -19,7 +20,7 @@ main(int argc, char *argv[]) {
 
     if (rc > 0) {
 	(void) wait();
-	int x2 = getreadcount();
+	int x2 = getusagecount(0, SYS_read);
 	total += (x2 - x1);
 	printf(1, "XV6_TEST_OUTPUT %d\n", total);
     }

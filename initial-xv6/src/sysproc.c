@@ -43,21 +43,45 @@ sys_getpid(void)
 }
 
 int
-sys_getreadcount(void)
+sys_getusagecount(void)
 {
-  // parse first argument as an integer
-  int reset;
-  if (argint(0, &reset) < 0)
+  // parse both arguments as integers
+  int is_reset_flag;
+  int sys_call_to_follow;
+
+  if (argint(0, &is_reset_flag) < 0 || argint(1, &sys_call_to_follow) < 0)
     return -1;
 
-  // reset counter
-  if (reset == 1) {
-    acquire(&readcount_lock);
-    readcount = 0;
-    release(&readcount_lock);
+  // reset the counter
+  if (is_reset_flag == 1) {
+    acquire(&usage_count_lock);
+    myproc()->usage_count = 0;
+    release(&usage_count_lock);
   }
 
-  return readcount;
+  // validate sys call range, not necessary
+  if (sys_call_to_follow > 0 && sys_call_to_follow < sys_call_count)
+  {
+    // sys call to track differs from the previous value
+    if (sys_call_to_follow != sys_call_usage_to_track)
+    {
+      // reset the counter if not already reset
+      // and update the new call to follow
+      if (!is_reset_flag)
+      {
+        acquire(&usage_count_lock);
+        myproc()->usage_count = 0;
+        release(&usage_count_lock);
+      }
+      sys_call_usage_to_track = sys_call_to_follow;
+    }
+  }
+  else
+  {
+    return -1;
+  }
+
+  return myproc()->usage_count;
 }
 
 int

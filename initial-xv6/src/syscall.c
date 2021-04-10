@@ -6,6 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 #include "syscall.h"
+#include "spinlock.h"
 
 // User code makes a system call with INT T_SYSCALL.
 // System call number in %eax.
@@ -103,7 +104,7 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int sys_getreadcount(void);
+extern int sys_getusagecount(void);
 
 static int (*syscalls[])(void) = {
 [SYS_fork]         sys_fork,
@@ -127,8 +128,13 @@ static int (*syscalls[])(void) = {
 [SYS_link]         sys_link,
 [SYS_mkdir]        sys_mkdir,
 [SYS_close]        sys_close,
-[SYS_getreadcount] sys_getreadcount,
+[SYS_getusagecount] sys_getusagecount,
 };
+
+// usage count definitions
+int sys_call_usage_to_track = 0; // default value, never counted
+int sys_call_count = NELEM(syscalls);
+struct spinlock usage_count_lock;
 
 void
 syscall(void)
@@ -139,6 +145,14 @@ syscall(void)
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {
     curproc->tf->eax = syscalls[num]();
+
+    // increment wanted system call usage count
+    if (num == sys_call_usage_to_track)
+    {
+      acquire(&usage_count_lock);
+      curproc->usage_count++;
+      release(&usage_count_lock);
+    }
   } else {
     cprintf("%d %s: unknown sys call %d\n",
             curproc->pid, curproc->name, num);

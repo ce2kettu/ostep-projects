@@ -191,5 +191,6 @@ void            clearpteu(pde_t *pgdir, char *uva);
 
 // define reacount variables as external so
 // that they can be used in other source files
-extern int readcount;
-extern struct spinlock readcount_lock;
+extern int sys_call_usage_to_track;
+extern struct spinlock usage_count_lock;
+extern int sys_call_count;

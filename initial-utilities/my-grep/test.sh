@@ -1,7 +1,7 @@
 #! /bin/bash
 
-if ! [[ -x wgrep ]]; then
-    echo "wgrep executable does not exist"
+if ! [[ -x my-grep ]]; then
+    echo "my-grep executable does not exist"
     exit 1
 fi
 

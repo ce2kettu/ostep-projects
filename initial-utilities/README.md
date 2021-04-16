@@ -179,7 +179,7 @@ line is printed out, otherwise it is not.
 Here is how a user would look for the term **foo** in the file **bar.txt**:
 
 ```
-prompt> ./wgrep foo bar.txt
+prompt> ./my-grep foo bar.txt
 this line has foo in it
 so does this foolish line; do you see where?
 even this line, which has barfood in it, will be printed.
@@ -199,10 +199,10 @@ even this line, which has barfood in it, will be printed.
   into the **getline()** library call (instead of **fgets()**), or roll your
   own. 
 * If **wgrep** is passed no command-line arguments, it should print
-  "wgrep: searchterm [file ...]" (followed by a newline) and exit with
+  "my-grep: searchterm [file ...]" (followed by a newline) and exit with
   status 1.  
 * If **wgrep** encounters a file that it cannot open, it should print
-  "wgrep: cannot open file" (followed by a newline) and exit with status 1. 
+  "my-grep: cannot open file" (followed by a newline) and exit with status 1. 
 * In all other cases, **wgrep** should exit with return code 0.
 * If a search term, but no file, is specified, **wgrep** should work,
   but instead of reading from a file, **wgrep** should read from

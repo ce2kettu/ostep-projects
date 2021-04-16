@@ -1,0 +1,1 @@
+gcc -o my-grep my-grep.c -Wall -Werror

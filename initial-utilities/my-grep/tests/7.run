@@ -1,1 +1,1 @@
-./wgrep abup tests/7.in
+./my-grep abup tests/7.in

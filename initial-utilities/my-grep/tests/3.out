@@ -1,1 +1,1 @@
-wgrep: searchterm [file ...]
+my-grep: searchterm [file ...]

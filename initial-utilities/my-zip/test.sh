@@ -1,7 +1,7 @@
 #! /bin/bash
 
-if ! [[ -x wzip ]]; then
-    echo "wzip executable does not exist"
+if ! [[ -x my-zip ]]; then
+    echo "my-zip executable does not exist"
     exit 1
 fi
 

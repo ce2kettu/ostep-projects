@@ -249,7 +249,7 @@ to compress the file **file.txt** into a (hopefully smaller) **file.z**,
 you would type:
 
 ```
-prompt> ./wzip file.txt > file.z
+prompt> ./my-zip file.txt > file.z
 ```
 
 The "greater than" sign is a UNIX shell redirection; in this case, it ensures
@@ -262,7 +262,7 @@ in a compressed file and writing (to standard output again) the uncompressed
 results. For example, to see the contents of **file.txt**, you would type:
 
 ```
-prompt> ./wunzip file.z
+prompt> ./my-unzip file.z
 ```
 
 **wunzip** should read in the compressed file (likely using **fread()**)
@@ -272,8 +272,8 @@ and print out the uncompressed output to standard output using **printf()**.
 
 * Correct invocation should pass one or more files via the command line to the 
   program; if no files are specified, the program should exit with return code
-  1 and print "wzip: file1 [file2 ...]" (followed by a newline) or
-  "wunzip: file1 [file2 ...]" (followed by a newline) for **wzip** and
+  1 and print "my-zip: file1 [file2 ...]" (followed by a newline) or
+  "my-unzip: file1 [file2 ...]" (followed by a newline) for **wzip** and
   **wunzip** respectively. 
 * The format of the compressed file must match the description above exactly
   (a 4-byte integer followed by a character for each run).

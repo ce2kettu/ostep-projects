@@ -1,1 +1,1 @@
-wunzip: file1 [file2 ...]
+my-unzip: file1 [file2 ...]

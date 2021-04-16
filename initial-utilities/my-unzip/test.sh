@@ -1,7 +1,7 @@
 #! /bin/bash
 
-if ! [[ -x wunzip ]]; then
-    echo "wunzip executable does not exist"
+if ! [[ -x my-unzip ]]; then
+    echo "my-unzip executable does not exist"
     exit 1
 fi
 

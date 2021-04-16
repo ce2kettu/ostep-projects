@@ -35,7 +35,7 @@ specified by the user and prints its contents. A typical usage is as follows,
 in which the user wants to see the contents of main.c, and thus types: 
 
 ```
-prompt> ./wcat main.c
+prompt> ./my-cat main.c
 #include <stdio.h>
 ...
 ```

@@ -1,0 +1,1 @@
+gcc -o my-zip my-zip.c -Wall -Werror

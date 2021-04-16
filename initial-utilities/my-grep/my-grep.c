@@ -6,7 +6,7 @@ void search_grep(void *stream, char *word_to_search);
 
 int main(int argc, char **argv)
 {
-    if (argc == 1)
+    if (argc < 2)
     {
         printf("my-grep: searchterm [file ...]\n");
         exit(1);
